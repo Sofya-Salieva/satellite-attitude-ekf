@@ -123,12 +123,3 @@
 свидетельствует об адекватной оценке неопределённости.
 
 ![Ковариация и 3σ](images/covariance_and_3sigma.png)
-
----
-
-## 🛠 Запуск
-
-1. **Клонируйте репозиторий:**
-   ```bash
-   git clone https://github.com/yourname/satellite-attitude-ekf
-   cd satellite-attitude-ekf
