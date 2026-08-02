@@ -31,7 +31,7 @@ class EKF:
         self.sigma_b = 0.0002
         self.dt = dt
 
-        # Матрицы Q и R инициализируются в конструкторе или пересчитываются при predict/update
+        # Матрицы Q и R 
         self.Q = self._compute_Q()
         self.R_mag = (mag_sigma**2) * np.eye(3)
         self.R_sun = (sun_sigma**2) * np.eye(3)
@@ -48,7 +48,7 @@ class EKF:
         self.history_q_est = []       # оценка кватерниона
 
     def _compute_Q(self):
-        """Диагональное приближение для Q"""
+        "Диагональное приближение для Q"
         dt = self.dt
         sigma_g2 = self.sigma_g**2
         sigma_b2 = self.sigma_b**2
@@ -69,14 +69,15 @@ class EKF:
 
         # 3. Матрица перехода ошибки F
         F = np.eye(6)
-        F[:3, :3] = np.eye(3)  # I - [omega×]*dt, в упрощённой модели пропускаем [omega×]
+        F[:3, :3] = np.eye(3)  
         F[:3, 3:] = -np.eye(3) * self.dt
 
         # 4. Обновление ковариации
         self.P = F @ self.P @ F.T + self.Q
-        # Минимальная добавка к диагонали P на каждом шаге
+
         P_epsilon = np.diag([1e-8, 1e-8, 1e-8, 1e-12, 1e-12, 1e-12])
         self.P = self.P + P_epsilon        
+        
         self.history_b_est.append(self.b_est.copy())
         self.history_P_diag.append(np.diag(self.P).copy())
         self.history_q_est.append(self.q_est)
@@ -88,7 +89,7 @@ class EKF:
         H_list = []
 
         if mag_meas is not None:
-            z_pred_mag = self.q_est.rotate_vector_inverse(self.mag_ref)  # self.mag_ref задаётся при инициализации
+            z_pred_mag = self.q_est.rotate_vector_inverse(self.mag_ref) 
             z_list.append(mag_meas)
             z_pred_list.append(z_pred_mag)
             H_mag = np.hstack([skew(z_pred_mag), np.zeros((3,3))])
@@ -110,8 +111,8 @@ class EKF:
         H = np.vstack(H_list)
 
         # Выбираем нужные строки из R
-        R = self.R[:len(z), :len(z)]  # если R построена заранее для полного вектора
-
+        R = self.R[:len(z), :len(z)]  
+        
         y = z - z_pred
         S = H @ self.P @ H.T + R
         K = self.P @ H.T @ np.linalg.inv(S)
