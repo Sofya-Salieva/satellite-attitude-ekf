@@ -83,17 +83,7 @@ $$\delta\mathbf{x} = \begin{pmatrix} \boldsymbol{\delta\theta} \\ \Delta\mathbf{
 | Частота коррекции | – | каждые 10 шагов (1 с) | Типичная для датчиков на кубсатах |
 
 **Формирование матриц:**
-$$
-\mathbf{Q} = \begin{pmatrix}
-(\sigma_g^2\Delta t + \frac{1}{3}\sigma_b^2\Delta t^3)\mathbf{I}_3 & \mathbf{0} \\
-\mathbf{0} & \sigma_b^2\Delta t\,\mathbf{I}_3
-\end{pmatrix},
-\qquad
-\mathbf{R} = \begin{pmatrix}
-\sigma_m^2\mathbf{I}_3 & \mathbf{0} \\
-\mathbf{0} & \sigma_s^2\mathbf{I}_3
-\end{pmatrix}
-$$
+$$\mathbf{Q} = \begin{pmatrix} (\sigma_g^2\Delta t + \frac{1}{3}\sigma_b^2\Delta t^3)\mathbf{I}_3 & \mathbf{0} \ \mathbf{0} & \sigma_b^2\Delta t,\mathbf{I}_3 \end{pmatrix},\quad \mathbf{R} = \begin{pmatrix} \sigma_m^2\mathbf{I}_3 & \mathbf{0} \ \mathbf{0} & \sigma_s^2\mathbf{I}_3 \end{pmatrix}$$
 ---
 
 ## 🧪 Результаты
