@@ -9,7 +9,7 @@ class Quaternion:
         self.z = float(z)
 
     def rotate_vector_inverse(self, v):
-        """Поворот вектора из инерциальной системы в связанную (R^T @ v)"""
+        "Поворот вектора из инерциальной системы в связанную (R^T @ v)"
         return self.conjugate().rotate_vector_matrix(v)
 
     def __mul__(self, other):
