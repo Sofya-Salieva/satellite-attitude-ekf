@@ -81,7 +81,7 @@ class SatelliteSimulator:
         k4 = dqdt(q_arr + dt * k3)
         
         q_new_arr = q_arr + (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
-        # Нормализуем массив (на всякий случай, вдруг ошибка округления)
+        # Нормализуем массив 
         q_new_arr = q_new_arr / np.linalg.norm(q_new_arr)
         
         return Quaternion(q_new_arr[0], q_new_arr[1], q_new_arr[2], q_new_arr[3])
