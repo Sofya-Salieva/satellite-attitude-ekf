@@ -4,7 +4,7 @@ from simulator import SatelliteSimulator
 from ekf import EKF
 from quaternion import Quaternion
 
-# --------------------- Параметры симуляции ---------------------
+# Параметры симуляции 
 dt = 0.01                      # шаг по времени (сек)
 T_total = 120                 # общее время симуляции (сек)
 steps = int(T_total / dt)
@@ -31,7 +31,7 @@ def Omega(omega):
         [wz, wy, -wx, 0]
     ])
 
-# --------------------- Создание симулятора ---------------------
+# Создание симулятора
 sim = SatelliteSimulator(
     initial_quat=q0_true,
     true_omega=true_omega,
@@ -44,7 +44,7 @@ sim = SatelliteSimulator(
     dt=dt
 )
 
-# --------------------- Создание EKF ----------------------------
+# Создание EKF
 q0_est = Quaternion(1, 0, 0, 0)
 
 ekf = EKF(
@@ -59,7 +59,7 @@ ekf = EKF(
 ekf.mag_ref = np.array([1, 0, 0])
 ekf.sun_ref = np.array([0, 0, 1])
 
-# --------------------- История для анализа ---------------------
+# История для анализа
 q_dr = q0_est
 b_dr = np.zeros(3)
 
@@ -71,12 +71,12 @@ history_est_q = []    # оценки кватерниона
 history_true_q = []   # истинные кватернионы из симулятора
 history_time = []
 
-# --------------------- Основной цикл ----------------------------
+# Основной цикл
 for step_idx in range(steps):
     # Получить измерения от симулятора
     meas = sim.step()       
 
-    # Измерения гироскопа поступают каждый шаг – выполняем predict
+    # Измерения гироскопа поступают каждый шаг 
     ekf.predict(meas['gyro'])
 
     # Магнитометр и солнечный датчик обновляются реже 
@@ -85,13 +85,13 @@ for step_idx in range(steps):
 
     # Сохраняем состояние для последующего анализа
     history_est_q.append(ekf.q_est)
-    history_true_q.append(sim.true_q)   # истинный кватернион на текущем шаге
+    history_true_q.append(sim.true_q)   
     history_time.append(sim.step_counter * dt)
 
     gyro_raw = meas['gyro']
     def dr_dqdt(qq_arr):
         return 0.5 * Omega(gyro_raw) @ qq_arr
-    # Преобразуем q_dr в массив
+
     q_arr = np.array([q_dr.w, q_dr.x, q_dr.y, q_dr.z])
     k1 = dr_dqdt(q_arr)
     k2 = dr_dqdt(q_arr + 0.5*dt*k1)
@@ -112,7 +112,7 @@ for step_idx in range(steps):
     errors_dr.append(angle_dr)
     time_hist.append(step_idx * dt)
 
-# --------------------- Графики ошибок ---------------------------
+# Графики ошибок
 fig, axes = plt.subplots(2,3, figsize=(15,10))
 ax = axes[0,0]
 plt.plot(history_time, errors_ekf)
@@ -120,6 +120,7 @@ plt.xlabel('Время (с)')
 plt.ylabel('Ошибка ориентации (град)')
 plt.title('Угловая ошибка EKF')
 plt.grid(True)
+
 # 1. Ошибка ориентации EKF vs Dead Reckoning
 ax = axes[0, 0]
 ax.plot(time_hist, errors_ekf, label='EKF')
@@ -132,8 +133,8 @@ ax.grid()
 
 # 2. Невязки магнитометра
 ax = axes[0, 1]
-innov_mag = np.array(ekf.history_innov_mag)  # (кол-во обновлений, 3)
-times_update = np.arange(0, len(innov_mag)) * dt * 10  # обновления каждые 10 шагов
+innov_mag = np.array(ekf.history_innov_mag)  
+times_update = np.arange(0, len(innov_mag)) * dt * 10  
 for i in range(3):
     ax.plot(times_update, innov_mag[:, i], label=f'ось {i}')
 ax.set_xlabel('Время (с)')
@@ -160,7 +161,7 @@ times_all = np.array(sim.history['time'])
 ax.plot(times_all, true_bias[:, 0], 'b-', label='истинный bias X')
 ax.plot(times_all, true_bias[:, 1], 'g-', label='истинный bias Y')
 ax.plot(times_all, true_bias[:, 2], 'r-', label='истинный bias Z')
-# оценка дрейфа: каждый шаг (мы сохраняем в ekf.history_b_est)
+
 b_est_arr = np.array(ekf.history_b_est)
 ax.plot(times_all, b_est_arr[:, 0], 'b--', label='оценка bias X')
 ax.plot(times_all, b_est_arr[:, 1], 'g--', label='оценка bias Y')
@@ -173,7 +174,7 @@ ax.grid()
 
 # 5. Диагональные элементы P
 ax = axes[1, 1]
-P_diag = np.array(ekf.history_P_diag)  # (кол-во обновлений, 6)
+P_diag = np.array(ekf.history_P_diag)  
 for i in range(6):
     ax.plot(times_all, P_diag[:, i], label=f'P[{i},{i}]')
 ax.set_xlabel('Время (с)')
@@ -182,10 +183,10 @@ ax.set_title('Диагональные элементы ковариационн
 ax.legend()
 ax.grid()
 
-# 6. Границы 3σ для угловой ошибки (используем sqrt(P[0,0]) как оценку неопределённости)
+# 6. Границы 3σ для угловой ошибки 
 ax = axes[1, 2]
-sigma_theta = np.sqrt(P_diag[:, 0])  # примерно по первой компоненте
-# ошибка на моменты обновлений (можно интерполировать)
+sigma_theta = np.sqrt(P_diag[:, 0])  
+
 err_upd = [errors_ekf[i] for i in range(len(errors_ekf)) if i % 10 == 0][:len(sigma_theta)]
 ax.plot(times_update, err_upd, label='Ошибка ориентации')
 ax.plot(times_all, 3*sigma_theta*180/np.pi, 'r--', label='3σ граница')
